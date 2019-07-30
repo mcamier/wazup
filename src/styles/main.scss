@@ -1,0 +1,167 @@
+body, html {
+    background: #F2F2F2;
+    margin: 0;
+    padding: 0;
+    font-family: 'Titillium Web', sans-serif;
+
+    #wu_app {
+        height: 100%;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+
+        #wu_users_panel {
+            order: 0;
+            flex-grow: 1;
+
+            #wu_users_panel_header {
+                background: #0583F2;
+                color: white;
+                font-weight: bold;
+                font-size: 20px;
+                padding: 1rem 0 1rem 1rem;
+            }
+
+            .wu_user_entry {
+                color: #0583F2;
+                border: 1px solid white;
+                border-top: 0;
+                border-left: 0;
+                border-right: 0;
+
+                &:hover {
+                    background: white;
+                }
+
+                img.wu_profile_pic {
+                    height: 30px;
+                    width: 30px;
+                    border-radius: 15px;
+                }
+            }
+        }
+
+        #wu_login_screen {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+        
+            form {
+                padding: 2rem 4rem;
+                width: 400px;
+                background: white;
+            }
+        
+            h1 {
+                color: #F28705;
+                font-weight: bolder;
+                text-align: center;
+            }
+        
+            input {
+                width: 100%;
+                padding: 1rem;
+                margin-bottom: 0.75rem;
+        
+                &:focus {
+                    outline: none;
+                }
+            }
+            
+            button {
+                width: 100%;
+                padding: 1rem;
+            }
+        }
+
+        #wu_chatroom_panel {
+            order: 1;
+            background: #F2F2F2;
+            flex-grow: 4;
+
+            #wu_chatroom_panel_header {
+                background: #0583F2;
+                color: white;
+                font-weight: bold;
+                font-size: 20px;
+                padding: 1rem 0 1rem 1rem;
+            }
+            
+            .wu_chatroom_message, .wu_chatroom_message.you {
+                padding: 1rem;
+                padding-left: 0;
+                padding-right: 0;
+            }
+
+            .wu_chatroom_message {
+                padding-right: 50%;
+                padding-left: 0.75rem;
+            }
+
+            .wu_chatroom_message.you {
+                padding-left: 50%;
+                padding-right: 0.75rem;
+            }
+
+            .wu_chatroom_message > div {
+                border-radius: 10px 10px 10px 0;
+            }
+
+            .wu_chatroom_message.you > div {
+                border-radius: 10px 10px 0 10px;
+            }
+
+            .wu_chatroom_message > div, .wu_chatroom_message.you > div {
+                padding: 0.25rem 0.5rem; 
+                color: white;
+            }
+
+            .wu_chatroom_message.you > div {
+                background: #66A626;
+            }
+
+            .wu_chatroom_message > div {
+                background: #91BF4B;
+            }
+
+            #wu_chatroom_send_form {
+                background: #0583F2;
+                color: white;
+                padding: 1rem;
+
+                form {
+                    margin: 0;
+                }
+    
+                input {
+                    border: 2px solid white;
+                    font-family: 'Titillium Web', sans-serif;
+                    padding: 0.5rem;
+                    font-size: 15px;
+                    border-radius: 10px;
+                    margin-right: 1rem;
+
+                    &:focus {
+                        border: 2px solid #F28705;
+                        outline: none !important;
+                    }
+                }
+    
+                button {
+                    border: 0;
+                    background: #F28705;
+                    color: white;
+                    font-weight: bold;
+                    font-size: 15px;
+                    padding: 0.5rem;
+                    border-radius: 10px;
+                }
+            }
+        }
+    }
+}
