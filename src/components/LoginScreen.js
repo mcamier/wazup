@@ -12,7 +12,7 @@ const LoginScreen = (props) => {
         <div id='wu_login_screen'>
             <form onSubmit={handleSubmit}>
                 <h1>Wazup !</h1>
-                You must be logged in to chat
+                <p>You must be logged in to chat</p>
                 <input
                     required placeholder="username" type="text"
                     value={username} onChange={event => setUsername(event.target.value)} />

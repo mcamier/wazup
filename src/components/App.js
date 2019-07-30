@@ -1,114 +1,96 @@
 import React, { useEffect, useState } from 'react';
-import openWebSocketAsync  from '../utils/webSocketPromise';
+import openWebSocketAsync from '../utils/webSocketPromise';
 
 import ChatRoomPanel from './ChatRoomPanel';
 import LoginForm from './LoginScreen';
 import UsersPanel from './UsersPanel';
 
-const mockChannels = {
-  'sgonzalez': {
-    'user_details': {
-      'user_id': 'sgonzalez',
-      'firstname': 'Sonia',
-      'lastname': 'Gonzalez',
-      'profile_picture':
-          'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'
-    },
-    'messages': [
-      {'content': 'Coucou mon coeur', 'from_you': true},
-      {'content': 'comment ca va', 'from_you': false},
-      {'content': 'bien et toi', 'from_you': true},
-      {'content': 'bien mais tu me manques, je t\'aime', 'from_you': false},
-      {'content': 'moi aussi doudi', 'from_you': true},
-    ]
-  },
-  'rgonzalez': {
-    'user_details': {
-      'user_id': 'rgonzalez',
-      'firstname': 'Raul',
-      'lastname': 'Gonzalez',
-      'profile_picture':
-          'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'
-    },
-    'messages': [{'content': 'Allo?', 'from_you': true}]
-  },
-  'amillois': {
-    'user_details': {
-      'user_id': 'amillois',
-      'firstname': 'Alexis',
-      'lastname': 'Millois',
-      'profile_picture':
-          'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'
-    },
-    'messages': [
-      {'content': 'Salut xixi, ca va ?', 'from_you': true},
-      {'content': 'oui', 'from_you': false}, {
-        'content': 'on se fait une petite partie de counter strike GO ??',
-        'from_you': true
-      },
-      {'content': 'Allez ok', 'from_you': false},
-      {'content': 'go discord alors', 'from_you': true}
-    ]
-  },
-  'afoobar': {
-    'user_details': {
-      'user_id': 'afoobar',
-      'firstname': 'Alice',
-      'lastname': 'Foobar',
-      'profile_picture':
-          'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'
-    },
-    'messages': []
-  },
-  'bfoobar': {
-    'user_details': {
-      'user_id': 'bfoobar',
-      'firstname': 'Bob',
-      'lastname': 'Foobar',
-      'profile_picture':
-          'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'
-    },
-    'messages': []
-  }
-};
-
 export default function App() {
-  let connection;
+  const [connection, setConnection] = useState(null);
   const [loggedUser, setLoggedUser] = useState(null);
-  const [channels, setChannels] = useState(mockChannels);
-  const [currentChannel, setCurrentChannel] = useState(mockChannels['amillois']);
+  const [channels, setChannels] = useState([]);
+  const [currentChannel, setCurrentChannel] = useState({});
 
-  const selectNewCurrentChannel = user_id => setCurrentChannel(channels[user_id]);
+  const selectNewCurrentChannel = user_id => setCurrentChannel(user_id);
 
-  const extractUsersList = () => Object.values(channels).map(values => values.user_details);
+  const extractUsersList = () => Object.keys(channels);
   const isUserLogged = () => loggedUser !== null && loggedUser !== undefined;
 
-  const onMessageCallback = (message) => console.log(message);
+  const getCurrentChannelMessages = () => { 
+    const channel = channels[currentChannel];
+    return (channel != undefined) ? channel.messages : undefined;
+  };
+
+  const addUserChannels = (usernames) => { 
+    const newChannel = { ...channels };
+    usernames.forEach((username, index) => { 
+      newChannel[username] = { "messages": [] };
+    });
+    setChannels(newChannel);
+  };
+
+  const removeUserChannels = () => { 
+    delete channels[username];
+    setChannels(channels);
+    console.log('delete user');
+    console.log(channels);
+  };
+
+  const onMessageCallback = (message) => {
+    const data = JSON.parse(message.data);
+    console.log(data.type);
+    if (data.type == "MESSAGE_EVENT") {
+      console.log('we received a message');
+    } else if (data.type == "USER_CONNECTED") {
+      addUserChannels(data.content);
+    } else if (data.type == "USER_DISCONNECTED") {
+      removeUserChannels(data.content);
+    }
+  };
 
   const initWebSocket = (username) => {
-    openWebSocketAsync(`ws://localhost:4242/${mcamier}`, onMessageCallback)
-      .then(conn => { 
-        connection = conn;
+    openWebSocketAsync(`ws://localhost:4242/${username}`, onMessageCallback)
+      .then(connection => {
+        setConnection(connection);
         setLoggedUser(username);
       })
-      .catch(err => { 
+      .catch(err => {
         console.log('unable to start websocket communication ' + err);
       })
   };
 
+  const handleMessageSubmit = message => {
+    if (connection == null || connection == undefined) { 
+      throw new Error('try to reconnect');
+    }
+    const message_wrapper = {
+      "from": loggedUser,
+      "to": currentChannel,
+      "content": message
+    };
+    connection.send(JSON.stringify(message_wrapper));
+  };
+
   return (
-      <div id='wu_app'>
-          {isUserLogged() ? (
-            <>
-              <UsersPanel 
-                users={extractUsersList()}
-                onUserSelect={selectNewCurrentChannel} />
-              <ChatRoomPanel
-                messages={currentChannel.messages}
-                recipient={currentChannel.user_details} />
-            </>
+    <div id='wu_app'>
+      {isUserLogged() ? (
+        <>
+          <UsersPanel 
+            users={extractUsersList()}
+            onUserSelect={selectNewCurrentChannel} />
+          
+          {getCurrentChannelMessages() != undefined ? (
+            <ChatRoomPanel
+              messages={getCurrentChannelMessages()}
+              recipient={currentChannel}
+              onMessageSubmit={handleMessageSubmit} />
           ) : (
-            <LoginForm onLoginAttempt={initWebSocket} />
+              <p>Select a connect to start a discussion</p>
           )}
-      </div>);
+          
+        </>
+      ) : (
+        <LoginForm onLoginAttempt={initWebSocket} />
+      )}
+    </div>);
 }
